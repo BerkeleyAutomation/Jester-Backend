@@ -3,7 +3,12 @@ from django.utils import timezone
 
 
 class User(models.Model):
-    user_id = models.AutoField('user id', primary_key=True)
+    cluster_id = models.IntegerField('cluster id', default=-1)
+    jokes_rated = models.IntegerField('jokes rated', default=0)
+
+    def __unicode__(self):
+        return '(id={0}, cluster_id={1}, jokes_rated={2})'.\
+            format(self.id, self.cluster_id, self.jokes_rated)
 
 
 class Joke(models.Model):
@@ -14,6 +19,6 @@ class Joke(models.Model):
 class Rating(models.Model):
     user = models.ForeignKey(User)
     joke = models.ForeignKey(Joke)
-    joke_idx = models.IntegerField('joke idx')
+    joke_idx = models.IntegerField('joke idx', default=-1)
     timestamp = models.DateTimeField('time stamp', default=timezone.now)
 
