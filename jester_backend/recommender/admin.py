@@ -1,3 +1,6 @@
 from django.contrib import admin
+from recommender.models import Joke, Rating
 
-# Register your models here.
+admin.site.register(Joke)
+admin.site.register(Rating)
+
