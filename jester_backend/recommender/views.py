@@ -17,7 +17,6 @@ def new_user(request):
     """
     user = User()
     user.save()
-    print user
     return HttpResponse(user.id)
 
 
