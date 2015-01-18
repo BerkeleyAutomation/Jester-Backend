@@ -1,5 +1,7 @@
 Django==1.7.2
+django-debug-toolbar==1.2.2
 MySQL-python==1.2.5
 numpy==1.9.1
 scikit-learn==0.15.2
 scipy==0.14.1
+sqlparse==0.1.14
