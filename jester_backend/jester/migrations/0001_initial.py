@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Joke',
             fields=[
-                ('joke_id', models.AutoField(serialize=False, verbose_name=b'joke id', primary_key=True)),
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('joke_text', models.CharField(max_length=2048, verbose_name=b'joke text')),
             ],
             options={
@@ -26,8 +26,9 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('joke_idx', models.IntegerField(default=-1, verbose_name=b'joke idx')),
-                ('timestamp', models.DateTimeField(default=django.utils.timezone.now, verbose_name=b'time stamp')),
-                ('joke', models.ForeignKey(to='recommender.Joke')),
+                ('rating', models.DecimalField(default=99, verbose_name=b'rating', max_digits=6, decimal_places=4)),
+                ('timestamp', models.DateTimeField(default=django.utils.timezone.now, null=True, verbose_name=b'time stamp', blank=True)),
+                ('joke', models.ForeignKey(to='jester.Joke')),
             ],
             options={
             },
@@ -47,7 +48,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='rating',
             name='user',
-            field=models.ForeignKey(to='recommender.User'),
+            field=models.ForeignKey(to='jester.User'),
             preserve_default=True,
         ),
     ]
