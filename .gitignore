@@ -1,3 +1,4 @@
 jester_backend/data/ratings.npy
 .idea
+*.pyc
 .DS_Store
