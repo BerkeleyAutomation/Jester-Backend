@@ -40,8 +40,9 @@ class Joke(models.Model):
     formatting when joke text is rendered.
     :param in_gagueg_set True if this joke is part of the gauge set.
     """
-    joke_text = models.CharField('joke text', max_length=2048)
+    joke_text = models.TextField('joke text')
     in_gauge_set = models.BooleanField('in gauge set', default=False)
+
     def __unicode__(self):
         """
         :return: A string representation of the joke
@@ -62,13 +63,16 @@ class Rating(models.Model):
     :param rating: The rating of the specified joke by the user, which is a
     decimal value from -10 to 10.
     :param timestamp: The time at which this rating was made. If the
-    information is missing, this field will be NULL;
+    information is missing, this field will be NULL.
+    :param current: True if this rating is the latest rating submitted by the user.
+    True by default, in order to ensure correctness for old data.
     """
     user = models.ForeignKey(User)
     joke = models.ForeignKey(Joke)
     joke_rating_idx = models.IntegerField('joke idx', default=-1)
     rating = models.DecimalField('rating', decimal_places=4, max_digits=6, default=99)
     timestamp = models.DateTimeField('time stamp', default=timezone.now, blank=True, null=True)
+    current = models.BooleanField('current', default=True)
 
     def __unicode__(self):
         """
