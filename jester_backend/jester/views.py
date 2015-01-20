@@ -1,5 +1,6 @@
 import json
 from django.http import HttpResponse
+from django.utils import timezone
 from jester.models import User, Rating, Joke
 
 
@@ -62,13 +63,15 @@ def rate_joke(request, user_id, joke_id, rating):
     joke = Joke.objects.filter(id=joke_id)[0]
     # TODO: Validate user id and joke id.
     joke_idx = user.jokes_rated + 1
-    rating = Rating(user=user, joke=joke, joke_idx=joke_idx, rating=rating)
+    rating = Rating(user=user, joke=joke, joke_rating_idx=joke_idx,
+                    rating=rating, timestamp=timezone.now())
     user.increment_rated_and_save()
     rating.save()
     if user.jokes_rated == GAUGE_SET_SIZE:
         # TODO Assign the user to a cluster
         pass
+    return HttpResponse('OK')
 
 
 def register_user(request, email, password):
-    
+    print email, password
