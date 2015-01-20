@@ -30,6 +30,7 @@ from jester.models import Joke, User, Rating
 IMPORTED_JOKES = True
 IMPORTED_OLD_RATINGS = True
 IMPORTED_NEW_RATINGS = True
+CREATED_CLUSTERS = False
 
 
 def import_jokes(clear_db=True):
@@ -179,11 +180,13 @@ def import_new_ratings():
 
 def create_clusters(save_file='../data/ratings.npy'):
     """
-    Creates clusters from the ratings in the database. Saves cluster information
-    to disk and also assigns users to clusters
+    Creates user and item clusters from the ratings in the database. Saves
+    cluster information to disk and also assigns users to clusters
 
     :return: None
     """
+    if CREATED_CLUSTERS:
+        return
     # If the file already exists, load ratings from file
     if isfile(save_file):
         rating_matrix = np.load(save_file)
@@ -214,6 +217,9 @@ def create_clusters(save_file='../data/ratings.npy'):
     rating_matrix = np.delete(rating_matrix, rows_to_delete, axis=0)
     print 'After deletion, dim(Ratings Matrix) = {0} x {1}'. \
         format(*rating_matrix.shape)
+    # TODO Create User Clusters, Create Item Clusters
+    # TODO Save them to disk
+    # TODO Assign users to clusters
 
 
 def main():
