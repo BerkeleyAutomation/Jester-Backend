@@ -9,9 +9,9 @@
 
     The AUTO_INCREMENT of a table can be reset to one using:
         ALTER TABLE <table name> AUTO_INCREMENT = 1;\
-
-    @author Viraj Mahesh
 """
+
+__author__ = 'Viraj Mahesh'
 
 from __future__ import division
 import re
@@ -19,7 +19,6 @@ import django
 import numpy as np
 from os.path import isfile
 import os
-
 
 # Setup code require before importing modules
 os.environ['DJANGO_SETTINGS_MODULE'] = 'jester_backend.settings'
@@ -32,6 +31,9 @@ IMPORTED_OLD_RATINGS = True
 IMPORTED_NEW_RATINGS = True
 CREATED_CLUSTERS = False
 
+# Gauge set jokes, indexed from 0 (according to the numpy dataset). To access
+# the same joke in MySQL add 1 to these indices
+GAUGE_SET = np.array([8, 61])
 
 def import_jokes(clear_db=True):
     """
@@ -218,6 +220,7 @@ def create_clusters(save_file='../data/ratings.npy'):
     print 'After deletion, dim(Ratings Matrix) = {0} x {1}'. \
         format(*rating_matrix.shape)
     # TODO Create User Clusters, Create Item Clusters
+    # Creating user clusters
     # TODO Save them to disk
     # TODO Assign users to clusters
 
