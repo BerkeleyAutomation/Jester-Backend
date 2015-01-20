@@ -38,9 +38,10 @@ class Joke(models.Model):
     Uniquely identifies a joke. Automatically increments when a joke is added.
     :param joke_text The text of the joke. Contains HTML tags to preserve
     formatting when joke text is rendered.
+    :param in_gagueg_set True if this joke is part of the gauge set.
     """
     joke_text = models.CharField('joke text', max_length=2048)
-
+    in_gauge_set = models.BooleanField('in gauge set', default=False)
     def __unicode__(self):
         """
         :return: A string representation of the joke
