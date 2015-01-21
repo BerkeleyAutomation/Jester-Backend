@@ -13,7 +13,7 @@ class User(models.Model):
         SELECT COUNT(*) FROM jester_ratings WHERE user_id=<user id>;
     When a new user is created, this parameter is 0.
     """
-    cluster_id = models.IntegerField('cluster id', default=-1)
+    model_params = models.TextField('model parameters', default='')
     jokes_rated = models.IntegerField('jokes rated', default=0)
 
     def __unicode__(self):
@@ -81,4 +81,11 @@ class Rating(models.Model):
         return '(user_id={0}, joke_id={1}, joke_idx={2}, rating={3}, timestamp={4})'.\
             format(self.user.id, self.joke.id,
                    self.joke_rating_idx, self.rating, self.timestamp)
+
+
+class Objects(models.Model):
+    """
+    Stores objects for the learning model. Users refer to these objects.
+    """
+    params = models.TextField('')
 
