@@ -44,7 +44,6 @@ class Joke(models.Model):
     """
     in_gauge_set = models.BooleanField('in gauge set', default=False)
     model_params = models.TextField('model params', default='')
-    current = models.BooleanField('current', default=False)
     joke_text = models.TextField('joke text')
 
     def __unicode__(self):
@@ -100,16 +99,8 @@ class Cluster(models.Model):
     data = models.TextField(default='')
 
 
-class PCAModel(models.Model):
+class RecommenderModel(models.Model):
     """
     Stores JSON formatted python objects.
     """
     data = models.TextField(default='')
-
-
-class CurrentJoke(Joke):
-    pass
-
-
-class CurrentRating(Rating):
-    pass

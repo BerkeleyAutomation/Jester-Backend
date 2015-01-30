@@ -26,7 +26,7 @@ django.setup()
 
 from jester.models import *
 
-IMPORTED_JOKES = True
+IMPORTED_JOKES = False
 IMPORTED_OLD_RATINGS = True
 IMPORTED_NEW_RATINGS = True
 EXPORTED_RATINGS = True
@@ -35,9 +35,11 @@ GENERATED_MODELS = False
 # Gauge set jokes, indexed from 0 (according to the numpy dataset). To access
 # the same joke in MySQL add 1 to these indices
 GAUGE_SET = np.array([7, 53])
+REMOVED_JOKES = {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 14, 20, 27,
+                 31, 43, 51, 52, 61, 73, 80, 100, 116}
 
 
-def import_jokes(clear_db=True):
+def import_jokes(clear_db=True, removed={}, joke_type=Joke):
     """
     Imports the jokes from the jokes.dat file into the MySQL database.
 
@@ -49,6 +51,10 @@ def import_jokes(clear_db=True):
 
     :param clear_db: If True, then clears all previously imported jokes
     before importing. This does not reset AUTO_INCREMENT to 1
+    :param removed: A set of joke ids that have been removed. Is the empty
+    set {} by default.
+    :param joke_type: The type of joke being imported. Should be either
+    Joke or CurrentJoke.
     :return: None
     """
     # Clear out table if necessary
@@ -66,9 +72,11 @@ def import_jokes(clear_db=True):
     # Use regex to extract joke text and id, and use the information to
     # populate the db
     pattern = re.compile(r'(\d+):(<p>.+?</p>)')
-    for match in pattern.finditer(joke_text):
+    for idx, match in enumerate(pattern.finditer(joke_text)):
+        if idx + 1 in removed:
+            continue
         text = match.group(2)
-        joke = Joke(joke_text=text)
+        joke = joke_type(joke_text=text)
         joke.save()
     # Close the file
     joke_file.close()
@@ -182,7 +190,7 @@ def import_new_ratings():
     jester_5_ratings.close()
 
 
-def export_old_ratings_as_matrix(save_file='../data/ratings.npy'):
+def export_old_ratings_as_matrix(save_file='../data/old_ratings.npy'):
     """
     Exports all the old ratings as a matrix
     :return: None
@@ -218,7 +226,7 @@ def export_old_ratings_as_matrix(save_file='../data/ratings.npy'):
 
 
 def main():
-    pass
+    import_jokes(clear_db=False, removed=REMOVED_JOKES, joke_type=CurrentJoke)
 
 
 if __name__ == '__main__':
