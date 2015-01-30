@@ -1,8 +1,10 @@
 import json
 import pickle
+
 from jsonpickle import decode
-from scripts.eigentaste import Point
 from django.http import HttpResponse
+
+from eigentaste.eigentaste import Point
 from jester.models import *
 
 
