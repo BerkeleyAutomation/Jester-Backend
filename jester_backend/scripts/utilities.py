@@ -10,30 +10,35 @@
     The AUTO_INCREMENT of a table can be reset to one using:
         ALTER TABLE <table name> AUTO_INCREMENT = 1;\
 """
-
-__author__ = 'Viraj Mahesh'
-
 from __future__ import division
 import re
 import django
 import numpy as np
-from os.path import isfile
 import os
+import pickle
+from os.path import isfile
+from eigentaste import Eigentaste, MISSING_JOKES, NUM_JOKES
 
-# Setup code require before importing modules
+
+__author__ = 'Viraj Mahesh'
+
+
+# Setup code required before importing modules
 os.environ['DJANGO_SETTINGS_MODULE'] = 'jester_backend.settings'
 django.setup()
 
-from jester.models import Joke, User, Rating
+from jester.models import *
 
 IMPORTED_JOKES = True
 IMPORTED_OLD_RATINGS = True
 IMPORTED_NEW_RATINGS = True
-CREATED_CLUSTERS = False
+EXPORTED_RATINGS = False
 
 # Gauge set jokes, indexed from 0 (according to the numpy dataset). To access
 # the same joke in MySQL add 1 to these indices
 GAUGE_SET = np.array([8, 61])
+OFFSET = 73421
+
 
 def import_jokes(clear_db=True):
     """
@@ -180,7 +185,7 @@ def import_new_ratings():
     jester_5_ratings.close()
 
 
-def create_clusters(save_file='../data/ratings.npy'):
+def export_ratings_as_matrix(save_file='../data/ratings.npy'):
     """
     Creates user and item clusters from the ratings in the database. Saves
     cluster information to disk and also assigns users to clusters
@@ -219,10 +224,18 @@ def create_clusters(save_file='../data/ratings.npy'):
     rating_matrix = np.delete(rating_matrix, rows_to_delete, axis=0)
     print 'After deletion, dim(Ratings Matrix) = {0} x {1}'. \
         format(*rating_matrix.shape)
-    # TODO Create User Clusters, Create Item Clusters
-    # Creating user clusters
-    # TODO Save them to disk
-    # TODO Assign users to clusters
+    # Initialize an eigentaste recommender model with the ratings matrix
+    recommender_model = Eigentaste(rating_matrix[OFFSET:, :], GAUGE_SET)
+    # Dump each cluster into a JSON formatted string using the jsonpickle
+    # library. Save this information to the db.
+    for cluster in recommender_model.clusters:
+        Cluster(data=encode(cluster)).save()
+    # Save the PCA model to the db so that new users can be projected onto the
+    # same 2D space.
+    PCAModel(data=pickle.dumps(recommender_model.pca_model)).save()
+    # Iterate through joke ids and set the cluster id for the jokes that are
+    # not missing.
+    store_jokes(recommender_model)
 
 
 def main():

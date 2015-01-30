@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from jsonpickle import encode
 
 
 class User(models.Model):
@@ -36,18 +37,26 @@ class Joke(models.Model):
     """
     :param id: Automatically created by django (hence not defined below).
     Uniquely identifies a joke. Automatically increments when a joke is added.
-    :param joke_text The text of the joke. Contains HTML tags to preserve
+    :param joke_text: The text of the joke. Contains HTML tags to preserve
     formatting when joke text is rendered.
-    :param in_gagueg_set True if this joke is part of the gauge set.
+    :param in_gague_set: True if this joke is part of the gauge set.
+    :param current: True if this joke will still be displayed.
     """
-    joke_text = models.TextField('joke text')
     in_gauge_set = models.BooleanField('in gauge set', default=False)
+    model_params = models.TextField('model params', default='')
+    current = models.BooleanField('current', default=False)
+    joke_text = models.TextField('joke text')
 
     def __unicode__(self):
         """
         :return: A string representation of the joke
         """
         return '(id={0})'.format(self.id)
+
+    def set_model_params(self, params):
+        self.model_params = encode(params)
+        self.current =  True
+        self.save()
 
 
 class Rating(models.Model):
@@ -83,9 +92,24 @@ class Rating(models.Model):
                    self.joke_rating_idx, self.rating, self.timestamp)
 
 
-class Objects(models.Model):
+class Cluster(models.Model):
     """
-    Stores objects for the learning model. Users refer to these objects.
+    Stores JSON formatted python objects. Each object represents a cluster object,
+    as defined in scripts/eigentaste.py.
     """
-    params = models.TextField('')
+    data = models.TextField(default='')
 
+
+class PCAModel(models.Model):
+    """
+    Stores JSON formatted python objects.
+    """
+    data = models.TextField(default='')
+
+
+class CurrentJoke(Joke):
+    pass
+
+
+class CurrentRating(Rating):
+    pass

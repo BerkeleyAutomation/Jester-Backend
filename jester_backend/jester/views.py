@@ -1,11 +1,13 @@
 import json
+import pickle
+from jsonpickle import decode
+from scripts.eigentaste import Point
 from django.http import HttpResponse
-from django.utils import timezone
-from jester.models import User, Rating, Joke
+from jester.models import *
 
 
 GAUGE_SET_SIZE = 2
-GAUGE_SET = [38, 39]
+GAUGE_SET = [9, 62]
 
 
 def delete_all_users():
@@ -61,6 +63,7 @@ def rate_joke(request, user_id, joke_id, rating):
     # Get the user and joke that corresponding to this rating
     user = User.objects.filter(id=user_id)[0]
     joke = Joke.objects.filter(id=joke_id)[0]
+    rating = float(rating)
     # TODO: Validate user id and joke id.
     joke_idx = user.jokes_rated + 1
     rating = Rating(user=user, joke=joke, joke_rating_idx=joke_idx,
@@ -68,9 +71,24 @@ def rate_joke(request, user_id, joke_id, rating):
     user.increment_rated_and_save()
     rating.save()
     if user.jokes_rated == GAUGE_SET_SIZE:
-        # TODO Assign the user to a cluster
-        pass
+        assign_to_cluster(user)
     return HttpResponse('OK')
+
+
+def assign_to_cluster(user):
+    """
+    Assigns a user to a cluster.
+    :param user:
+    :return:
+    """
+    pca_model = pickle.loads(PCAModel.objects.all()[0].data)
+    user_ratings = []
+    for rating in Rating.objects.filter(user=user).order_by('id'):
+        user_ratings.append(float(rating.rating))
+    projected_rating = pca_model.transform(user_ratings)[0]
+    projected_rating = Point(*projected_rating)
+    clusters = Cluster.objects.all()
+    print decode(clusters[0].data)
 
 
 def register_user(request, email, password):
