@@ -15,9 +15,6 @@ import re
 import django
 import numpy as np
 import os
-import pickle
-from os.path import isfile
-from eigentaste import Eigentaste, MISSING_JOKES, NUM_JOKES
 
 
 __author__ = 'Viraj Mahesh'
