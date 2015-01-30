@@ -185,34 +185,27 @@ def import_new_ratings():
     jester_5_ratings.close()
 
 
-def export_ratings_as_matrix(save_file='../data/ratings.npy'):
+def export_old_ratings_as_matrix(save_file='../data/ratings.npy'):
     """
-    Creates user and item clusters from the ratings in the database. Saves
-    cluster information to disk and also assigns users to clusters
+    Exports all the old ratings as a matrix
 
     :return: None
     """
-    if CREATED_CLUSTERS:
+    if EXPORTED_RATINGS:
         return
-    # If the file already exists, load ratings from file
-    if isfile(save_file):
-        rating_matrix = np.load(save_file)
-    else:
-        # Get total number of jokes and users
-        jokes = Joke.objects.count()
-        users = User.objects.latest('id').id
-        # Create an empty matrix of size U x J, where U is the number of users and
-        # J is the number of jokes
-        rating_matrix = np.empty((users, jokes))
-        rating_matrix[:] = np.nan
-        # Get users that have rated each joke and update rating matrix
-        for id in xrange(1, jokes + 1):
-            print 'Completed {0}% of matrix construction'.format(id / jokes * 100)
-            joke = get(Joke, id=id)[0]
-            for rating in Rating.objects.filter(joke=joke):
-                rating_matrix[rating.user.id - 1][id - 1] = rating.rating
-        # Save the ratings matrix to file
-        np.save(save_file, rating_matrix)
+    # Get total number of jokes and users
+    jokes = Joke.objects.count()
+    users = User.objects.latest('id').id
+    # Create an empty matrix of size U x J, where U is the number of users and
+    # J is the number of jokes
+    rating_matrix = np.empty((users, jokes))
+    rating_matrix[:] = np.nan
+    # Get users that have rated each joke and update rating matrix
+    for id in xrange(1, jokes + 1):
+        print 'Completed {0}% of matrix construction'.format(id / jokes * 100)
+        joke = get(Joke, id=id)[0]
+        for rating in Rating.objects.filter(joke=joke):
+            rating_matrix[rating.user.id - 1][id - 1] = rating.rating
     # Remove the rows that have no ratings
     rows_to_delete = []
     for idx, row in enumerate(np.copy(rating_matrix)):
@@ -224,22 +217,12 @@ def export_ratings_as_matrix(save_file='../data/ratings.npy'):
     rating_matrix = np.delete(rating_matrix, rows_to_delete, axis=0)
     print 'After deletion, dim(Ratings Matrix) = {0} x {1}'. \
         format(*rating_matrix.shape)
-    # Initialize an eigentaste recommender model with the ratings matrix
-    recommender_model = Eigentaste(rating_matrix[OFFSET:, :], GAUGE_SET)
-    # Dump each cluster into a JSON formatted string using the jsonpickle
-    # library. Save this information to the db.
-    for cluster in recommender_model.clusters:
-        Cluster(data=encode(cluster)).save()
-    # Save the PCA model to the db so that new users can be projected onto the
-    # same 2D space.
-    PCAModel(data=pickle.dumps(recommender_model.pca_model)).save()
-    # Iterate through joke ids and set the cluster id for the jokes that are
-    # not missing.
-    store_jokes(recommender_model)
+    # Save the ratings matrix to file
+    np.save(save_file, rating_matrix)
 
 
 def main():
-    create_clusters()
+    pass
 
 
 if __name__ == '__main__':
