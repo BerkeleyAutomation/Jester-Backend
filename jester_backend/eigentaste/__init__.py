@@ -1,1 +1,5 @@
-__author__ = 'viraj'
+__author__ = 'Viraj Mahesh'
+
+from eigentaste import Eigentaste
+from cluster import Cluster
+from point import Point
