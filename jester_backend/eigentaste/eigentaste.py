@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.preprocessing import Imputer
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
+from point import Point
+from cluster import Cluster
 
 
 __author__ = 'Viraj Mahesh'
