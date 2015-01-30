@@ -29,12 +29,12 @@ from jester.models import *
 IMPORTED_JOKES = True
 IMPORTED_OLD_RATINGS = True
 IMPORTED_NEW_RATINGS = True
-EXPORTED_RATINGS = False
+EXPORTED_RATINGS = True
+GENERATED_MODELS = False
 
 # Gauge set jokes, indexed from 0 (according to the numpy dataset). To access
 # the same joke in MySQL add 1 to these indices
-GAUGE_SET = np.array([8, 61])
-OFFSET = 73421
+GAUGE_SET = np.array([7, 53])
 
 
 def import_jokes(clear_db=True):
@@ -58,7 +58,7 @@ def import_jokes(clear_db=True):
         for joke in Joke.objects.all():
             joke.delete()
     # Read all the jokes into memory
-    joke_file = open('../data/jokes.dat')
+    joke_file = open('../data/jokes.txt')
     joke_text = joke_file.read()
     # Remove all newline characters
     joke_text = joke_text.replace('\r', '')
@@ -185,7 +185,6 @@ def import_new_ratings():
 def export_old_ratings_as_matrix(save_file='../data/ratings.npy'):
     """
     Exports all the old ratings as a matrix
-
     :return: None
     """
     if EXPORTED_RATINGS:
