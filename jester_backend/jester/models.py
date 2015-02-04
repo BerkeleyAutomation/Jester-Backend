@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from jsonpickle import encode
+import json
 
 
 class User(models.Model):
@@ -17,13 +17,6 @@ class User(models.Model):
     model_params = models.TextField('model parameters', default='')
     jokes_rated = models.IntegerField('jokes rated', default=0)
 
-    def __unicode__(self):
-        """
-        :return: A string representation of the user.
-        """
-        return '(id={0}, cluster_id={1}, jokes_rated={2})'.\
-            format(self.id, self.cluster_id, self.jokes_rated)
-
     def increment_rated_and_save(self):
         """
         Increments the number of jokes rated by 1 and saves changes
@@ -31,6 +24,20 @@ class User(models.Model):
         """
         self.jokes_rated += 1
         self.save()
+
+    def store_model_and_save(self, model):
+        self.model_params = json.dumps(model)
+        self.save()
+
+    def load_model(self):
+        return json.loads(self.model_params)
+
+    def __unicode__(self):
+        """
+        :return: A string representation of the user.
+        """
+        return '(id={0}, cluster_id={1}, jokes_rated={2})'.\
+            format(self.id, self.cluster_id, self.jokes_rated)
 
 
 class Joke(models.Model):
@@ -52,10 +59,14 @@ class Joke(models.Model):
         """
         return '(id={0})'.format(self.id)
 
-    def set_model_params(self, params):
-        self.model_params = encode(params)
-        self.current =  True
+    def store_model_and_save(self, model):
+        self.model_params = json.dumps(model)
         self.save()
+
+    def cluster_id(self):
+        model = json.loads(self.model_params)
+        return model['cluster id']
+
 
 
 class Rating(models.Model):
@@ -82,6 +93,9 @@ class Rating(models.Model):
     timestamp = models.DateTimeField('time stamp', default=timezone.now, blank=True, null=True)
     current = models.BooleanField('current', default=True)
 
+    def to_float(self):
+        return float(self.rating)
+
     def __unicode__(self):
         """
         :return: A string representation of the rating
@@ -91,16 +105,11 @@ class Rating(models.Model):
                    self.joke_rating_idx, self.rating, self.timestamp)
 
 
-class Cluster(models.Model):
-    """
-    Stores JSON formatted python objects. Each object represents a cluster object,
-    as defined in scripts/eigentaste.py.
-    """
-    data = models.TextField(default='')
-
-
 class RecommenderModel(models.Model):
     """
-    Stores JSON formatted python objects.
+    Stores JSON formatted python objects, that represent the recommender model.
     """
     data = models.TextField(default='')
+
+    def store(self, model):
+        self.data = json.dumps(model.export_model())
