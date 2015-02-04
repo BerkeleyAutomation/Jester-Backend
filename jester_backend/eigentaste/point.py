@@ -51,3 +51,12 @@ class Point(object):
 
     def distance(self, point):
         return sqrt((self.x - point.x) ** 2 + (self.y - point.y) ** 2)
+
+    def export_model(self):
+        exported_point = {'x': float(self.x),
+                          'y': float(self.y)}
+        return exported_point
+
+    @classmethod
+    def import_model(self, model):
+        return Point(model['x'], model['y'])
