@@ -15,6 +15,7 @@ import re
 import django
 import numpy as np
 import os
+from eigentaste import Eigentaste
 
 
 __author__ = 'Viraj Mahesh'
@@ -26,11 +27,11 @@ django.setup()
 
 from jester.models import *
 
-IMPORTED_JOKES = False
+IMPORTED_JOKES = True
 IMPORTED_OLD_RATINGS = True
 IMPORTED_NEW_RATINGS = True
 EXPORTED_RATINGS = True
-GENERATED_MODELS = False
+BUILT_MODELS = False
 
 # Gauge set jokes, indexed from 0 (according to the numpy dataset). To access
 # the same joke in MySQL add 1 to these indices
@@ -39,7 +40,7 @@ REMOVED_JOKES = {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 14, 20, 27,
                  31, 43, 51, 52, 61, 73, 80, 100, 116}
 
 
-def import_jokes(clear_db=True, removed={}, joke_type=Joke):
+def import_jokes(clear_db=True, removed={}):
     """
     Imports the jokes from the jokes.dat file into the MySQL database.
 
@@ -76,7 +77,7 @@ def import_jokes(clear_db=True, removed={}, joke_type=Joke):
         if idx + 1 in removed:
             continue
         text = match.group(2)
-        joke = joke_type(joke_text=text)
+        joke = Joke(joke_text=text)
         joke.save()
     # Close the file
     joke_file.close()
@@ -190,7 +191,7 @@ def import_new_ratings():
     jester_5_ratings.close()
 
 
-def export_old_ratings_as_matrix(save_file='../data/old_ratings.npy'):
+def export_ratings_as_matrix(save_file='../data/old_ratings.npy'):
     """
     Exports all the old ratings as a matrix
     :return: None
@@ -225,8 +226,28 @@ def export_old_ratings_as_matrix(save_file='../data/old_ratings.npy'):
     np.save(save_file, rating_matrix)
 
 
+def build_model():
+    if BUILT_MODELS:
+        return
+    data = np.load('../data/dataset.npy')
+    model = Eigentaste(data, GAUGE_SET)
+    assign_joke_cluster_indices(model)
+    # Create a new RecommenderModel and then store the model in it
+    recommender_model = RecommenderModel()
+    recommender_model.store(model)
+    # Save the model in the database
+    recommender_model.save()
+
+
+def assign_joke_cluster_indices(model):
+    for idx, item_cluster in enumerate(model.joke_clusters):
+        for joke_idx in item_cluster.indices:
+            joke = get(Joke, id=joke_idx + 1)[0]
+            joke.store_model_and_save({'cluster id': idx})
+
+
 def main():
-    import_jokes(clear_db=False, removed=REMOVED_JOKES, joke_type=CurrentJoke)
+    build_model()
 
 
 if __name__ == '__main__':
