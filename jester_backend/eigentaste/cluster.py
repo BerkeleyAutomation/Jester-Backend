@@ -17,7 +17,6 @@ class Cluster(object):
         """
         self.top_left = top_left
         self.bottom_right = bottom_right
-        self.predictions = {}
 
     def bisect(self):
         """
@@ -68,3 +67,14 @@ class Cluster(object):
 
     def h(self):
         return self.top_left.y - self.bottom_right.y
+
+    def export_model(self):
+        exported_cluster = {'top left': self.top_left.export_model(),
+                            'bottom right': self.bottom_right.export_model()}
+        return exported_cluster
+
+    @classmethod
+    def import_model(self, model):
+        top_left = Point.import_model(model['top left'])
+        bottom_right = Point.import_model(model['bottom right'])
+        return Cluster(top_left, bottom_right)
