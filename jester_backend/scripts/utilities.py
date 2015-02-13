@@ -15,9 +15,7 @@ import re
 import django
 import numpy as np
 import os
-import pickle
-from os.path import isfile
-from eigentaste import Eigentaste, MISSING_JOKES, NUM_JOKES
+from eigentaste import Eigentaste
 
 
 __author__ = 'Viraj Mahesh'
@@ -32,15 +30,17 @@ from jester.models import *
 IMPORTED_JOKES = True
 IMPORTED_OLD_RATINGS = True
 IMPORTED_NEW_RATINGS = True
-EXPORTED_RATINGS = False
+EXPORTED_RATINGS = True
+BUILT_MODELS = False
 
 # Gauge set jokes, indexed from 0 (according to the numpy dataset). To access
 # the same joke in MySQL add 1 to these indices
-GAUGE_SET = np.array([8, 61])
-OFFSET = 73421
+GAUGE_SET = np.array([7, 53])
+REMOVED_JOKES = {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 14, 20, 27,
+                 31, 43, 51, 52, 61, 73, 80, 100, 116}
 
 
-def import_jokes(clear_db=True):
+def import_jokes(clear_db=True, removed={}):
     """
     Imports the jokes from the jokes.dat file into the MySQL database.
 
@@ -52,6 +52,10 @@ def import_jokes(clear_db=True):
 
     :param clear_db: If True, then clears all previously imported jokes
     before importing. This does not reset AUTO_INCREMENT to 1
+    :param removed: A set of joke ids that have been removed. Is the empty
+    set {} by default.
+    :param joke_type: The type of joke being imported. Should be either
+    Joke or CurrentJoke.
     :return: None
     """
     # Clear out table if necessary
@@ -61,7 +65,7 @@ def import_jokes(clear_db=True):
         for joke in Joke.objects.all():
             joke.delete()
     # Read all the jokes into memory
-    joke_file = open('../data/jokes.dat')
+    joke_file = open('../data/jokes.txt')
     joke_text = joke_file.read()
     # Remove all newline characters
     joke_text = joke_text.replace('\r', '')
@@ -69,7 +73,9 @@ def import_jokes(clear_db=True):
     # Use regex to extract joke text and id, and use the information to
     # populate the db
     pattern = re.compile(r'(\d+):(<p>.+?</p>)')
-    for match in pattern.finditer(joke_text):
+    for idx, match in enumerate(pattern.finditer(joke_text)):
+        if idx + 1 in removed:
+            continue
         text = match.group(2)
         joke = Joke(joke_text=text)
         joke.save()
@@ -185,34 +191,26 @@ def import_new_ratings():
     jester_5_ratings.close()
 
 
-def export_ratings_as_matrix(save_file='../data/ratings.npy'):
+def export_ratings_as_matrix(save_file='../data/old_ratings.npy'):
     """
-    Creates user and item clusters from the ratings in the database. Saves
-    cluster information to disk and also assigns users to clusters
-
+    Exports all the old ratings as a matrix
     :return: None
     """
-    if CREATED_CLUSTERS:
+    if EXPORTED_RATINGS:
         return
-    # If the file already exists, load ratings from file
-    if isfile(save_file):
-        rating_matrix = np.load(save_file)
-    else:
-        # Get total number of jokes and users
-        jokes = Joke.objects.count()
-        users = User.objects.latest('id').id
-        # Create an empty matrix of size U x J, where U is the number of users and
-        # J is the number of jokes
-        rating_matrix = np.empty((users, jokes))
-        rating_matrix[:] = np.nan
-        # Get users that have rated each joke and update rating matrix
-        for id in xrange(1, jokes + 1):
-            print 'Completed {0}% of matrix construction'.format(id / jokes * 100)
-            joke = get(Joke, id=id)[0]
-            for rating in Rating.objects.filter(joke=joke):
-                rating_matrix[rating.user.id - 1][id - 1] = rating.rating
-        # Save the ratings matrix to file
-        np.save(save_file, rating_matrix)
+    # Get total number of jokes and users
+    jokes = Joke.objects.count()
+    users = User.objects.latest('id').id
+    # Create an empty matrix of size U x J, where U is the number of users and
+    # J is the number of jokes
+    rating_matrix = np.empty((users, jokes))
+    rating_matrix[:] = np.nan
+    # Get users that have rated each joke and update rating matrix
+    for id in xrange(1, jokes + 1):
+        print 'Completed {0}% of matrix construction'.format(id / jokes * 100)
+        joke = get(Joke, id=id)[0]
+        for rating in Rating.objects.filter(joke=joke):
+            rating_matrix[rating.user.id - 1][id - 1] = rating.rating
     # Remove the rows that have no ratings
     rows_to_delete = []
     for idx, row in enumerate(np.copy(rating_matrix)):
@@ -224,22 +222,32 @@ def export_ratings_as_matrix(save_file='../data/ratings.npy'):
     rating_matrix = np.delete(rating_matrix, rows_to_delete, axis=0)
     print 'After deletion, dim(Ratings Matrix) = {0} x {1}'. \
         format(*rating_matrix.shape)
-    # Initialize an eigentaste recommender model with the ratings matrix
-    recommender_model = Eigentaste(rating_matrix[OFFSET:, :], GAUGE_SET)
-    # Dump each cluster into a JSON formatted string using the jsonpickle
-    # library. Save this information to the db.
-    for cluster in recommender_model.clusters:
-        Cluster(data=encode(cluster)).save()
-    # Save the PCA model to the db so that new users can be projected onto the
-    # same 2D space.
-    PCAModel(data=pickle.dumps(recommender_model.pca_model)).save()
-    # Iterate through joke ids and set the cluster id for the jokes that are
-    # not missing.
-    store_jokes(recommender_model)
+    # Save the ratings matrix to file
+    np.save(save_file, rating_matrix)
+
+
+def build_model():
+    if BUILT_MODELS:
+        return
+    data = np.load('../data/dataset.npy')
+    model = Eigentaste(data, GAUGE_SET)
+    assign_joke_cluster_indices(model)
+    # Create a new RecommenderModel and then store the model in it
+    recommender_model = RecommenderModel()
+    recommender_model.store(model)
+    # Save the model in the database
+    recommender_model.save()
+
+
+def assign_joke_cluster_indices(model):
+    for idx, item_cluster in enumerate(model.joke_clusters):
+        for joke_idx in item_cluster.indices:
+            joke = get(Joke, id=joke_idx + 1)[0]
+            joke.store_model_and_save({'cluster id': idx})
 
 
 def main():
-    create_clusters()
+    build_model()
 
 
 if __name__ == '__main__':

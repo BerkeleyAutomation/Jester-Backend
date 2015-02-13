@@ -12,10 +12,22 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
+            name='Cluster',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('data', models.TextField(default=b'')),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
             name='Joke',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('joke_text', models.CharField(max_length=2048, verbose_name=b'joke text')),
+                ('in_gauge_set', models.BooleanField(default=False, verbose_name=b'in gauge set')),
+                ('model_params', models.TextField(default=b'', verbose_name=b'model params')),
+                ('joke_text', models.TextField(verbose_name=b'joke text')),
             ],
             options={
             },
@@ -25,10 +37,21 @@ class Migration(migrations.Migration):
             name='Rating',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('joke_idx', models.IntegerField(default=-1, verbose_name=b'joke idx')),
+                ('joke_rating_idx', models.IntegerField(default=-1, verbose_name=b'joke idx')),
                 ('rating', models.DecimalField(default=99, verbose_name=b'rating', max_digits=6, decimal_places=4)),
                 ('timestamp', models.DateTimeField(default=django.utils.timezone.now, null=True, verbose_name=b'time stamp', blank=True)),
+                ('current', models.BooleanField(default=True, verbose_name=b'current')),
                 ('joke', models.ForeignKey(to='jester.Joke')),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='RecommenderModel',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('data', models.TextField(default=b'')),
             ],
             options={
             },
@@ -38,7 +61,7 @@ class Migration(migrations.Migration):
             name='User',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('cluster_id', models.IntegerField(default=-1, verbose_name=b'cluster id')),
+                ('model_params', models.TextField(default=b'', verbose_name=b'model parameters')),
                 ('jokes_rated', models.IntegerField(default=0, verbose_name=b'jokes rated')),
             ],
             options={
