@@ -1,7 +1,7 @@
 /* Delete all rows from tables */
-DELETE FROM jester_user;
-DELETE FROM jester_joke;
 DELETE FROM jester_rating;
+DELETE FROM jester_joke;
+DELETE FROM jester_user;
 DELETE FROM jester_recommendermodel;
 
 /* Reset auto increment fields */
