@@ -247,6 +247,7 @@ def assign_joke_cluster_indices(model):
 
 
 def main():
+    import_jokes(removed=REMOVED_JOKES)
     build_model()
 
 
