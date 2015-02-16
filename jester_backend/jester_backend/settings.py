@@ -68,6 +68,11 @@ DATABASES = {
     }
 }
 
+CORS_ORIGIN_WHITELIST = (
+     'google.com',
+     'virajmahesh.github.io',
+)
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 
