@@ -61,8 +61,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'jester_db',
-        'USER': 'root',
-        'PASSWORD': '',
+        'USER': 'viraj',
+        'PASSWORD': 'viraj123',
     }
 }
 
