@@ -27,7 +27,7 @@ django.setup()
 
 from jester.models import *
 
-IMPORTED_JOKES = True
+IMPORTED_JOKES = False
 IMPORTED_OLD_RATINGS = True
 IMPORTED_NEW_RATINGS = True
 EXPORTED_RATINGS = True
@@ -40,7 +40,7 @@ REMOVED_JOKES = {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 14, 20, 27,
                  31, 43, 51, 52, 61, 73, 80, 100, 116}
 
 
-def import_jokes(clear_db=True, removed={}):
+def import_jokes(clear_db=False, removed={}):
     """
     Imports the jokes from the jokes.dat file into the MySQL database.
 
