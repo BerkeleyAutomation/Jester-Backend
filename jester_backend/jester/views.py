@@ -147,5 +147,12 @@ def update_gauge_set_ratings(user_id):
         update_user_model(user_id, joke_id)
 
 
-def register_user(request, email, password):
-    print email, password
+def register_user(request):
+    email = request.POST.get('email')
+    request.user.email = email
+    request.user.save()
+
+
+def logout(request):
+    logout(request)
+    return HttpResponse('OK')
