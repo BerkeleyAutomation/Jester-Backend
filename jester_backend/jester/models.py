@@ -1,9 +1,10 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
 import json
 
 
-class User(models.Model):
+class Rater(models.Model):
     """
     :param id: Automatically created by django (hence not defined below).
     Uniquely identifies a user. Automatically increments when a user is added.
@@ -14,6 +15,7 @@ class User(models.Model):
         SELECT COUNT(*) FROM jester_ratings WHERE user_id=<user id>;
     When a new user is created, this parameter is 0.
     """
+    user = models.OneToOneField(User)
     model_params = models.TextField('model parameters', default='')
     jokes_rated = models.IntegerField('jokes rated', default=0)
 
@@ -36,8 +38,8 @@ class User(models.Model):
         """
         :return: A string representation of the user.
         """
-        return '(id={0}, cluster_id={1}, jokes_rated={2})'.\
-            format(self.id, self.cluster_id, self.jokes_rated)
+        return '(id={0}, jokes_rated={1})'.\
+            format(self.id, self.jokes_rated)
 
 
 class Joke(models.Model):
