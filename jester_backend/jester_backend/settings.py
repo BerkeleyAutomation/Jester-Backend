@@ -77,6 +77,8 @@ CORS_ORIGIN_WHITELIST = (
     'berkeleyautomation.github.io',
 )
 
+CORS_ALLOW_CREDENTIALS = True
+
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 
