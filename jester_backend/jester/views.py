@@ -1,4 +1,5 @@
 from eigentaste import StoredEigentasteModel, JOKE_CLUSTERS
+from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from jester.models import *
 from scripts import get
@@ -14,6 +15,18 @@ def delete_all_users():
     ** FOR INTERNAL USE ONLY **
     """
     User.objects.clear()
+
+
+def get_user(request):
+    if not request.user.is_authenticated():
+        username = password = str(User.objects.count() + 1)
+        user = User.objects.create_user(username, password=password)
+        user = authenticate(username=username, password=password)
+        user.rater = Rater.objects.create(user=user)
+        login(request, user)
+    else:
+        user = request.user
+    return user, user.rater
 
 
 def new_user(request):
@@ -134,5 +147,12 @@ def update_gauge_set_ratings(user_id):
         update_user_model(user_id, joke_id)
 
 
-def register_user(request, email, password):
-    print email, password
+def register_user(request):
+    email = request.POST.get('email')
+    request.user.email = email
+    request.user.save()
+
+
+def logout(request):
+    logout(request)
+    return HttpResponse('OK')
