@@ -142,7 +142,7 @@ def import_old_ratings():
         user_id, joke_id, rating = rating.split(',')
         user_id, joke_id, rating = int(user_id), int(joke_id), float(rating)
         # Get or create objects corresponding to the parameters
-        user = get(User, id=user_id)[0]
+        user = get(Rater, id=user_id)[0]
         joke = get(Joke, id=joke_id)[0]
         # Create a new rating to insert into the db. Note that timestamp
         # and joke idx (i.e order of joke presentation) is missing in this dataset
@@ -167,7 +167,7 @@ def import_new_ratings():
     """
     if IMPORTED_NEW_RATINGS:
         return
-    offset = User.objects.count()
+    offset = Rater.objects.count()
     print '{0} ratings already in db'.format(offset)
     jester_5_ratings = file('../data/jester_5_ratings.csv')
     # Counting the number of lines in the file for progress report

@@ -88,7 +88,7 @@ class Rating(models.Model):
     :param current: True if this rating is the latest rating submitted by the user.
     True by default, in order to ensure correctness for old data.
     """
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(Rater)
     joke = models.ForeignKey(Joke)
     joke_rating_idx = models.IntegerField('joke idx', default=-1)
     rating = models.DecimalField('rating', decimal_places=4, max_digits=6, default=99)

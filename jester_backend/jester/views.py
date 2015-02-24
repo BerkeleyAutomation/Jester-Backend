@@ -18,28 +18,24 @@ def delete_all_users():
 
 
 def get_user(request):
+    if request.session.test_cookie_worked():
+        print "Cookie Set"
+    else:
+        print "Cookie not set"
     if not request.user.is_authenticated():
+        print "User not autheticated"
         username = password = str(User.objects.count() + 1)
         user = User.objects.create_user(username, password=password)
         user = authenticate(username=username, password=password)
+        user.is_active = True
         user.rater = Rater.objects.create(user=user)
         login(request, user)
     else:
         user = request.user
-    return user, user.rater
+    return user.rater
 
 
-def new_user(request):
-    """
-    Creates a new user and returns the user id. This should be the first
-    API function called by Jester.
-    """
-    user = User()
-    user.save()
-    return HttpResponse(user.id)
-
-
-def request_joke(request, user_id):
+def request_joke(request):
     """
     Returns the next joke for the specified user id.
 
@@ -49,15 +45,14 @@ def request_joke(request, user_id):
     'joke_text': HTML formatted text that is used to display the joke.
     """
     # Select user with the corresponding id
-    user = User.objects.filter(id=user_id)[0]
+    user = get_user(request)
     response = {}  # No initial response
     # User has not finished rating gauge set jokes
     if user.jokes_rated < GAUGE_SET_SIZE:
         joke_id = GAUGE_SET[user.jokes_rated]  # Get joke id of gauge set
         required_joke = Joke.objects.filter(id=joke_id)[0]  # Load the joke from db
         # Format the joke id and text as a JSON response
-        response = {'joke_id':joke_id, 'joke_text':required_joke.joke_text}
-    # TODO: User has rated gauge set jokes and needs recommended jokes
+        response = {'joke_id': joke_id, 'joke_text': required_joke.joke_text}
     else:
         response = recommend_joke(user.id)
     return HttpResponse(json.dumps(response), content_type="application/json")
@@ -66,14 +61,14 @@ def request_joke(request, user_id):
 def recommend_joke(user_id):
     recommender_model = RecommenderModel.objects.all()[0]
     stored_model = StoredEigentasteModel(recommender_model.data)
-    user = get(User, id=user_id)[0]
+    user = get(Rater, id=user_id)[0]
     user_model = user.load_model()
     id = stored_model.recommend_joke(user_model)
     joke = get(Joke, id=id + 1)[0]
     return {'joke_id': int(id + 1), 'joke_text': joke.joke_text}
 
 
-def rate_joke(request, user_id, joke_id, rating):
+def rate_joke(request, joke_id, rating):
     """
     Accepts a rating from the user and stores it. Updates user information
     as well. Verifies that user id and joke id are valid.
@@ -84,7 +79,7 @@ def rate_joke(request, user_id, joke_id, rating):
     :return: An HTTP response confirming that the rating was successfully processed.
     """
     # Get the user and joke that corresponding to this rating
-    user = User.objects.filter(id=user_id)[0]
+    user = get_user(request)
     joke = Joke.objects.filter(id=joke_id)[0]
     rating = float(rating)
     joke_idx = user.jokes_rated + 1
@@ -123,12 +118,12 @@ def assign_to_cluster(user_id):
 
 
 def store_user_params(user_id, model):
-    user = get(User, id=user_id)[0]
+    user = get(Rater, id=user_id)[0]
     user.store_model_and_save(model)
 
 
 def update_user_model(user_id, joke_id):
-    user = get(User, id=user_id)[0]
+    user = get(Rater, id=user_id)[0]
     joke = get(Joke, id=joke_id)[0]
     rating = get(Rating, user_id=user_id, joke=joke)[0]
     model = user.load_model()
