@@ -53,6 +53,8 @@ MIDDLEWARE_CLASSES = (
 
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
+SESSION_COOKIE_HTTPONLY = False
+
 ROOT_URLCONF = 'jester_backend.urls'
 
 WSGI_APPLICATION = 'jester_backend.wsgi.application'
