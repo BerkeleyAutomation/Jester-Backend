@@ -18,12 +18,7 @@ def delete_all_users():
 
 
 def get_user(request):
-    if request.session.test_cookie_worked():
-        print "Cookie Set"
-    else:
-        print "Cookie not set"
     if not request.user.is_authenticated():
-        print "User not autheticated"
         username = password = str(User.objects.count() + 1)
         user = User.objects.create_user(username, password=password)
         user = authenticate(username=username, password=password)
@@ -148,6 +143,11 @@ def register_user(request):
     request.user.save()
 
 
-def logout(request):
+def logout_user(request):
+    """
+    Logs a user out and clears all session information.
+    :param request: The HTTP request made while requesting a log out
+    :return: An HTTP response confirming that the logout was successful
+    """
     logout(request)
     return HttpResponse('OK')
