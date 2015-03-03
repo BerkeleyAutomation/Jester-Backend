@@ -15,6 +15,8 @@ __author__ = 'Viraj Mahesh'
 
 JOKE_CLUSTERS = 15
 MOVING_AVERAGE_VECTOR_SIZE = 5
+PROB_RANDOM_JOKE = 0.5
+NUM_JOKES = 128
 
 
 class Eigentaste(object):
@@ -22,6 +24,7 @@ class Eigentaste(object):
     def __init__(self, train, gauge, levels=4):
         """
         Initializes Eigentaste with a training set and gauge set.
+
         :param train: The dataset on which Eigentaste must be trained.
         :param gauge: List of indices that define the gauge set.
         :param levels: The number of recursive levels for user clustering.
@@ -163,9 +166,7 @@ class StoredEigentasteModel(object):
         # Create list of averages, and remove those where all jokes have been rated
         averages = [(idx, np.mean(ratings)) for idx, ratings in
                     enumerate(user['moving averages']) if not all_rated(idx)]
-        print len(averages)
         cluster_id, average = max(averages, key=operator.itemgetter(1))
         jokes_rated = user['jokes rated'][cluster_id]
-        x = self.joke_clusters[cluster_id].recommend(user['user cluster id'], jokes_rated)
-        user['jokes rated'][cluster_id] += 1
-        return x
+        return self.joke_clusters[cluster_id].\
+            recommend(user['user cluster id'], jokes_rated)
