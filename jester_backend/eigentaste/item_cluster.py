@@ -36,7 +36,8 @@ class ItemCluster(object):
 
     def recommend(self, user_cluster_id, jokes_rated):
         return self.indices[
-            self.prediction_order[user_cluster_id][-jokes_rated - 1]]
+            self.prediction_order[user_cluster_id][-jokes_rated - 1]
+        ]
 
     def moving_averages(self, cluster_idx):
         return self.averages[cluster_idx]

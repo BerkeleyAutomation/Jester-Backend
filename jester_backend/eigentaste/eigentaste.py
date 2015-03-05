@@ -7,6 +7,8 @@ from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 from point import Point
 from item_cluster import ItemCluster
+from jester import *
+from jester.models import Joke
 from cluster import Cluster
 
 
@@ -15,8 +17,6 @@ __author__ = 'Viraj Mahesh'
 
 JOKE_CLUSTERS = 15
 MOVING_AVERAGE_VECTOR_SIZE = 5
-PROB_RANDOM_JOKE = 0.5
-NUM_JOKES = 128
 
 
 class Eigentaste(object):
@@ -34,22 +34,27 @@ class Eigentaste(object):
         self.train = train
         self.gauge = gauge
         self.levels = levels
+
         # Store number of users and jokes
         self.users, self.jokes = self.train.shape
+
         # Impute missing values using mean imputation
         self.imputed_train = Imputer().fit_transform(self.train)
+
         # Create a new PCA model and fit it to the training data (gauge set
         # sub-matrix). The PCA model will be used to project new users into the
         # same plane as the rest of the data set.
         self.gauge_set_submatrix = self.imputed_train[:, gauge]
         self.pca_model = PCA()
         self.pca_data = self.pca_model.fit_transform(self.gauge_set_submatrix)
+
         # Split the projected data recursively into clusters
         self.clusters = self.create_clusters()
         # Assign the users to each cluster, generating a list of cluster indices
         self.indices = self.classify()
         # Generated the predicted value of joke ratings for each cluster
         self.predictions = self.calculate_predictions()
+
         # Split the jokes into joke clusters for dynamic recommendations
         self.kmeans_model = KMeans(n_clusters=JOKE_CLUSTERS)
         self.joke_clusters = self.create_joke_clusters()
@@ -147,6 +152,7 @@ class StoredEigentasteModel(object):
                          model['user clusters']]
         self.joke_clusters = [ItemCluster.import_model(cluster) for cluster in
                               model['joke clusters']]
+        self.predictions = model['predictions']
 
     def transform(self, user):
         return self.pca_model.transform(user)
@@ -162,11 +168,27 @@ class StoredEigentasteModel(object):
 
     def recommend_joke(self, user):
         def all_rated(n):
-            return user['jokes rated'][n] == self.joke_clusters[n].jokes
-        # Create list of averages, and remove those where all jokes have been rated
+            return user_model['jokes rated'][n] == self.joke_clusters[n].jokes
+
+        user_model = user.load_model()
+        moving_averages = user_model['moving averages']
+
         averages = [(idx, np.mean(ratings)) for idx, ratings in
-                    enumerate(user['moving averages']) if not all_rated(idx)]
-        cluster_id, average = max(averages, key=operator.itemgetter(1))
-        jokes_rated = user['jokes rated'][cluster_id]
-        return self.joke_clusters[cluster_id].\
-            recommend(user['user cluster id'], jokes_rated)
+                    enumerate(moving_averages) if not all_rated(idx)]
+
+        item_cluster_idx, average = max(averages, key=operator.itemgetter(1))
+        jokes_rated = user_model['jokes rated'][item_cluster_idx]
+        user_cluster_idx = user_model['user cluster id']
+
+        item_cluster = self.joke_clusters[item_cluster_idx]
+        joke_id = item_cluster.recommend(user_cluster_idx, jokes_rated) + 1
+
+        log_averages(user, averages)
+        log_cluster_choice(user, item_cluster_idx, average)
+
+        return Joke.objects.get(id=joke_id)
+
+    def get_prediction(self, user, joke):
+        user_model = user.load_model()
+        cluster_id = user_model['user cluster id']
+        return self.predictions[cluster_id][joke.id - 1]

@@ -15,17 +15,15 @@ import re
 import django
 import numpy as np
 import os
-from eigentaste import Eigentaste
-
 
 __author__ = 'Viraj Mahesh'
-
 
 # Setup code required before importing modules
 os.environ['DJANGO_SETTINGS_MODULE'] = 'jester_backend.settings'
 django.setup()
 
 from jester.models import *
+from eigentaste import Eigentaste
 
 IMPORTED_JOKES = False
 IMPORTED_OLD_RATINGS = True
@@ -214,7 +212,6 @@ def export_ratings_as_matrix(save_file='../data/old_ratings.npy'):
     # Remove the rows that have no ratings
     rows_to_delete = []
     for idx, row in enumerate(np.copy(rating_matrix)):
-        # If all entries in the row are np.nan
         if np.count_nonzero(~np.isnan(row)) == 0:
             rows_to_delete.append(idx)
     print 'Before deletion, dim(Ratings Matrix) = {0} x {1}'. \
