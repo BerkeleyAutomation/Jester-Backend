@@ -75,12 +75,12 @@ DATABASES = {
 CORS_ORIGIN_WHITELIST = (
     'google.com',
     'berkeleyautomation.github.io',
-    '127.0.0.1',
+    # '127.0.0.1',
 )
 
-# Comment out before pushing to production
-SESSION_COOKIE_DOMAIN = '127.0.0.1'
-CSRF_COOKIE_DOMAIN = '127.0.0.1'
+# For testing. Comment out before pushing to production
+# SESSION_COOKIE_DOMAIN = '127.0.0.1'
+# CSRF_COOKIE_DOMAIN = '127.0.0.1'
 
 CORS_ALLOW_CREDENTIALS = True
 
