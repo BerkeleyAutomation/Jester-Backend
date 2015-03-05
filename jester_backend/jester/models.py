@@ -188,7 +188,7 @@ class UserLog(models.Model):
 
     @staticmethod
     def log_rating(request, user, joke, rating):
-        action = ('User {0} submitted rating of {1} for joke {2}'.
+	action = ('User {0} submitted rating of {1} for joke {2}'.
                   format(user.id, rating.to_float(), joke.id))
         user_action = UserLog(timestamp=timezone.now(),
                               ip_address=get_ip(request),
@@ -202,7 +202,7 @@ class UserLog(models.Model):
         user = request.user.rater
         action = 'User {0} logged out'.format(user.id)
         user_action = UserLog(timestamp=timezone.now(),
-                              ip_address=get_real_ip(request),
+                              ip_address=get_ip(request),
                               action=action,
                               action_type=UserActionType.LOGOUT,
                               user=user)
@@ -221,7 +221,7 @@ class UserLog(models.Model):
         action = ('User {0} requested joke and server responded with joke {1}'
                  ' which was {2}'.format(user.id, joke.id, method))
         user_action = UserLog(timestamp=timezone.now(),
-                              ip_address=get_real_ip(request),
+                              ip_address=get_ip(request),
                               action=action,
                               action_type=UserActionType.REQUEST_JOKE,
                               user=user)
