@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils import timezone
-from ipware.ip import get_real_ip
+from ipware.ip import get_ip
 from django_enumfield import enum
 import json
 
@@ -191,7 +191,7 @@ class UserLog(models.Model):
         action = ('User {0} submitted rating of {1} for joke {2}'.
                   format(user.id, rating.to_float(), joke.id))
         user_action = UserLog(timestamp=timezone.now(),
-                              ip_address=get_real_ip(request),
+                              ip_address=get_ip(request),
                               action=action,
                               action_type=UserActionType.RATING,
                               user=user)
