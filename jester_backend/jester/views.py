@@ -97,10 +97,6 @@ def rate_joke(request, joke_id, rating):
     :return: An HTTP response confirming that the rating was successfully processed.
     """
     user = get_user(request)
-
-    if user.stale:
-        return HttpResponse('ERROR')
-
     joke = Joke.objects.get(id=joke_id)
     rating = Rating.create(user, joke, float(rating))
 
