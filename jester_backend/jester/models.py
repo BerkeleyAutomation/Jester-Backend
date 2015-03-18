@@ -136,7 +136,7 @@ class Rating(models.Model):
         """
         :return: A string representation of the rating
         """
-        return '(user_id={0}, joke_id={1}, joke_idx={2}, rating={3}, timestamp={4})'.\
+        return '(user_id={0}, joke_id={1}, joke_idx={2}, rating={3}, timestamp={4})'. \
             format(self.user.id, self.joke.id,
                    self.joke_rating_idx, self.rating, self.timestamp)
 
@@ -188,14 +188,15 @@ class UserLog(models.Model):
 
     @staticmethod
     def log_rating(request, user, joke, rating):
-	action = ('User {0} submitted rating of {1} for joke {2}'.
+        action = ('User {0} submitted rating of {1} for joke {2}'.
                   format(user.id, rating.to_float(), joke.id))
         user_action = UserLog(timestamp=timezone.now(),
-                              ip_address=get_ip(request),
-                              action=action,
-                              action_type=UserActionType.RATING,
-                              user=user)
+                          ip_address=get_ip(request),
+                          action=action,
+                          action_type=UserActionType.RATING,
+                          user=user)
         user_action.save()
+
 
     @staticmethod
     def log_logout(request, user):
@@ -206,6 +207,7 @@ class UserLog(models.Model):
                               action_type=UserActionType.LOGOUT,
                               user=user)
         user_action.save()
+
 
     @staticmethod
     def log_slider(request, user, old_rating, new_rating):
