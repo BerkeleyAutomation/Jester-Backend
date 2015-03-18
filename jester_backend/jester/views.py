@@ -183,6 +183,7 @@ def update_gauge_set_ratings(user):
 def log_slider(request, old_rating, new_rating):
     old_rating, new_rating = float(old_rating), float(new_rating)
     log_slider_movement(request, old_rating, new_rating)
+    return HttpResponse("OK");
 
 
 def register_user(request):
