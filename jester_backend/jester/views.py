@@ -180,6 +180,11 @@ def update_gauge_set_ratings(user):
         update_user_model(user, joke, rating)
 
 
+def log_slider(request, old_rating, new_rating):
+    old_rating, new_rating = float(old_rating), float(new_rating)
+    log_slider_movement(request, old_rating, new_rating)
+
+
 def register_user(request):
     """
     Registers a user's email address and their response to the
@@ -197,6 +202,6 @@ def logout_user(request):
     :param request: The HTTP request made while requesting a log out
     :return: An HTTP response confirming that the logout was successful
     """
-    log_logout(request)
+    log_logout(request, get_user(request))
     logout(request)
     return HttpResponse('OK')

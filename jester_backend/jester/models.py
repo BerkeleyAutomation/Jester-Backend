@@ -198,15 +198,26 @@ class UserLog(models.Model):
         user_action.save()
 
     @staticmethod
-    def log_logout(request):
-        user = request.user.rater
+    def log_logout(request, user):
         action = 'User {0} logged out'.format(user.id)
         user_action = UserLog(timestamp=timezone.now(),
-                              ip_address=get_real_ip(request),
+                              ip_address=get_ip(request),
                               action=action,
                               action_type=UserActionType.LOGOUT,
                               user=user)
         user_action.save()
+
+    @staticmethod
+    def log_slider(request, user, old_rating, new_rating):
+        action = ('User {0} moved slider from  {1} to {2}'.
+                  format(user.id, old_rating, new_rating))
+        user_action = UserLog(timestamp=timezone.now(),
+                              ip_address=get_ip(request),
+                              action=action,
+                              action_type=UserActionType.SLIDER,
+                              user=user)
+        user_action.save()
+
 
     @staticmethod
     def log_request_joke(request, user, joke, stale, random, gauge):
@@ -219,17 +230,13 @@ class UserLog(models.Model):
         else:
             method = 'recommended'
         action = ('User {0} requested joke and server responded with joke {1}'
-                 ' which was {2}'.format(user.id, joke.id, method))
+                  ' which was {2}'.format(user.id, joke.id, method))
         user_action = UserLog(timestamp=timezone.now(),
-                              ip_address=get_real_ip(request),
+                              ip_address=get_ip(request),
                               action=action,
                               action_type=UserActionType.REQUEST_JOKE,
                               user=user)
         user_action.save()
-
-
-class RecommenderActionType(enum.Enum):
-    pass
 
 
 class RecommenderLog(models.Model):
