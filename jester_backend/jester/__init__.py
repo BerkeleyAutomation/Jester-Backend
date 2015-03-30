@@ -1,5 +1,5 @@
 from models import UserLog
-from models import RecommenderLog
+from models import RecommenderLog, MailingListMember
 
 log_rating = UserLog.log_rating
 log_request_joke = UserLog.log_request_joke

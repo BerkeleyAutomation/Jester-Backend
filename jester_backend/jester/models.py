@@ -277,3 +277,15 @@ class RecommenderLog(models.Model):
                                             action=action,
                                             user=user)
         recommender_action.save()
+
+
+class MailingListMember(models.Model):
+    timestamp = models.DateTimeField('time stamp')
+    email = models.TextField('email')
+    reference = models.TextField('reference')
+
+    @staticmethod
+    def join_mailing_list(email, reference):
+        MailingListMember(timestamp=timezone.now(),
+                          email=email,
+                          reference=reference).save()

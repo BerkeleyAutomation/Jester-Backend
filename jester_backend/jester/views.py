@@ -207,3 +207,13 @@ def logout_user(request):
     log_logout(request, get_user(request))
     logout(request)
     return HttpResponse('OK')
+
+
+def join_mailing_list(request):
+    """
+    Adds a user's email and reference source to the mailing list.
+
+    """
+    email, reference = request.GET.get('email'), request.GET.get('reference')
+    MailingListMember.join_mailing_list(email, reference)
+    return HttpResponse('OK')
