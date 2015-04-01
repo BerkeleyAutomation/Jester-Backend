@@ -20,7 +20,7 @@ PROB_NEW_JOKE = 0.75
 OLD_JOKES = 128
 
 # Number of ratings after gauge set before we display random jokes
-RANDOM_THRESH = 3
+RANDOM_THRESH = 5
 
 rng = SystemRandom()  # Random Number Generator
 
