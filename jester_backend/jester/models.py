@@ -190,11 +190,13 @@ class UserLog(models.Model):
     def log_rating(request, user, joke, rating):
         action = ('User {0} submitted rating of {1} for joke {2}'.
                   format(user.id, rating.to_float(), joke.id))
+        params = {'user_id': user.id, 'joke_id': joke.id, 'rating': rating.id}
         user_action = UserLog(timestamp=timezone.now(),
                               ip_address=get_ip(request),
                               action=action,
                               action_type=UserActionType.RATING,
-                              user=user)
+                              user=user,
+                              params=json.dumps(params))
         user_action.save()
 
 
@@ -205,7 +207,8 @@ class UserLog(models.Model):
                               ip_address=get_ip(request),
                               action=action,
                               action_type=UserActionType.LOGOUT,
-                              user=user)
+                              user=user,
+                              params='')
         user_action.save()
 
 
@@ -213,11 +216,13 @@ class UserLog(models.Model):
     def log_slider(request, user, old_rating, new_rating):
         action = ('User {0} moved slider from  {1} to {2}'.
                   format(user.id, old_rating, new_rating))
+        params = {'old_rating': old_rating, 'new_rating': new_rating}
         user_action = UserLog(timestamp=timezone.now(),
                               ip_address=get_ip(request),
                               action=action,
                               action_type=UserActionType.SLIDER,
-                              user=user)
+                              user=user,
+                              params=json.dumps(params))
         user_action.save()
 
 
