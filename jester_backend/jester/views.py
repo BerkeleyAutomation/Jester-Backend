@@ -208,16 +208,6 @@ def log_slider(request, old_rating, new_rating):
     return HttpResponse("OK")
 
 
-def register_user(request):
-    """
-    Registers a user's email address and their response to the
-    'Where did you hear about Jester?' question.
-    """
-    email = request.GET.get('email')
-    request.user.email = email
-    request.user.save()
-
-
 def logout_user(request):
     """
     Logs a user out and clears all session information.
