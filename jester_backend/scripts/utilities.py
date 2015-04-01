@@ -26,6 +26,7 @@ from jester.models import *
 from eigentaste import Eigentaste
 
 IMPORTED_JOKES = False
+IMPORTED_NEW_JOKES = False
 IMPORTED_OLD_RATINGS = True
 IMPORTED_NEW_RATINGS = True
 EXPORTED_RATINGS = True
@@ -243,9 +244,48 @@ def assign_joke_cluster_indices(model):
             joke.store_model_and_save({'cluster id': idx})
 
 
+def import_new_jokes():
+    """
+    Imports the jokes from the jokes.dat file into the MySQL database.
+
+    Uses regex to extract joke text and indices from the data.
+
+    Assumes that the table jester_joke in the database jester_db is empty,
+    and that AUTO_INCREMENT for that table is 1. These conditions must be met
+    in order for the jokes to be imported correctly
+
+    :param clear_db: If True, then clears all previously imported jokes
+    before importing. This does not reset AUTO_INCREMENT to 1
+    :param removed: A set of joke ids that have been removed. Is the empty
+    set {} by default.
+    :param joke_type: The type of joke being imported. Should be either
+    Joke or CurrentJoke.
+    :return: None
+    """
+    # Clear out table if necessary
+    if IMPORTED_NEW_JOKES:
+        return
+    # Read all the jokes into memory
+    joke_file = open('../data/new_jokes.txt')
+    joke_text = joke_file.read()
+    # Remove all newline characters
+    joke_text = joke_text.replace('\r', '')
+    joke_text = joke_text.replace('\n', '')
+    # Use regex to extract joke text and id, and use the information to
+    # populate the db
+    pattern = re.compile(r'(\d+):(<p>.+?</p>)')
+    for idx, match in enumerate(pattern.finditer(joke_text)):
+        text = match.group(2)
+        joke = Joke(joke_text=text)
+        joke.save()
+    # Close the file
+    joke_file.close()
+
+
 def main():
     import_jokes(removed=REMOVED_JOKES)
     build_model()
+    import_new_jokes()
 
 
 if __name__ == '__main__':
