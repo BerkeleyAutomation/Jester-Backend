@@ -14,7 +14,7 @@ GAUGE_SET_JOKES = [Joke.objects.get(id=8), Joke.objects.get(id=54)]
 PROB_RANDOM_JOKE = 1.001 # For testing purposes
 
 # Probability of displaying a random joke that is new
-PROB_NEW_JOKE = 0.75
+PROB_NEW_JOKE = 1.001
 
 # Number of old jokes in the data base
 OLD_JOKES = 128
