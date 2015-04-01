@@ -173,7 +173,7 @@ class UserLog(models.Model):
     Represents an action executed by the user
 
     :param: timestamp: Records the time the action took place.
-    :param: ip_address: The IP Address of the user. An IP address of wwww
+    :param: ip_address: The IP Address of the user.
     :param: action: A string representing the action taken by the user
     :param: action_type: An integer that represent which category the
         user action falls under.
@@ -191,10 +191,10 @@ class UserLog(models.Model):
         action = ('User {0} submitted rating of {1} for joke {2}'.
                   format(user.id, rating.to_float(), joke.id))
         user_action = UserLog(timestamp=timezone.now(),
-                          ip_address=get_ip(request),
-                          action=action,
-                          action_type=UserActionType.RATING,
-                          user=user)
+                              ip_address=get_ip(request),
+                              action=action,
+                              action_type=UserActionType.RATING,
+                              user=user)
         user_action.save()
 
 

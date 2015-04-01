@@ -60,6 +60,7 @@ def request_joke(request):
         {
             'joke_id': The id number of the joke. Uniquely identifies the joke.
             'joke_text': HTML formatted text that is used to display the joke.
+            'num_jokes_rates': Number of jokes rated by the user.
         }
     """
     user = get_user(request)
