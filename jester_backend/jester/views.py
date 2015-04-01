@@ -9,7 +9,18 @@ from random import SystemRandom
 GAUGE_SET_SIZE = 2
 GAUGE_SET = [8, 54]
 GAUGE_SET_JOKES = [Joke.objects.get(id=8), Joke.objects.get(id=54)]
-PROB_RANDOM_JOKE = 0.3  # Probability of recommending a random joke
+
+# Probability of displaying a random joke
+PROB_RANDOM_JOKE = 1.001 # For testing purposes
+
+# Probability of displaying a random joke that is new
+PROB_NEW_JOKE = 0.75
+
+# Number of old jokes in the data base
+OLD_JOKES = 128
+
+# Number of ratings after gauge set before we display random jokes
+RANDOM_THRESH = 3
 
 rng = SystemRandom()  # Random Number Generator
 
@@ -61,9 +72,17 @@ def request_joke(request):
         joke_id = GAUGE_SET[user.jokes_rated]  # Get joke id of gauge set.
         joke = Joke.objects.get(id=joke_id)  # Load the joke from db.
         gauge = True
-    elif rng.random() < PROB_RANDOM_JOKE:  # Choose a random unrated joke
+    elif (user.jokes_rated > GAUGE_SET_SIZE + RANDOM_THRESH
+          and rng.random() < PROB_RANDOM_JOKE):  # Choose a random unrated joke
         user_model = user.load_model()
-        unrated_jokes = Joke.objects.exclude(id__in=user_model['rated ids'])
+        flag = True
+        if rng.random() < PROB_NEW_JOKE:  # Choose a random joke out of set of new jokes
+            unrated_jokes = (Joke.objects.filter(id__gt=OLD_JOKES).
+                             exclude(id__in=user_model['rated ids']))
+            flag = False
+        if flag or unrated_jokes.count() == 0:  # Choose random joke out of unrated jokes
+            unrated_jokes = Joke.objects.exclude(id__in=user_model['rated ids'])
+
         joke = rng.choice(unrated_jokes)
         random = True
     else:  # Use Eigentaste to select a joke
@@ -163,15 +182,16 @@ def update_user_model(user, joke, rating):
     model = user.load_model()
     recommender_model = RecommenderModel.objects.get()
     stored_model = StoredEigentasteModel(recommender_model.data)
-    prediction = stored_model.get_prediction(user, joke)
 
-    model['jokes rated'][joke.cluster_id()] += 1
-    model['moving averages'][joke.cluster_id()].pop(0)
-    model['moving averages'][joke.cluster_id()].append(rating.to_float())
+    if joke.id <= OLD_JOKES:
+        prediction = stored_model.get_prediction(user, joke)
+        log_prediction(user, joke, prediction)
+        model['jokes rated'][joke.cluster_id()] += 1
+        model['moving averages'][joke.cluster_id()].pop(0)
+        model['moving averages'][joke.cluster_id()].append(rating.to_float())
+
     model['rated ids'].append(joke.id)
-
     user.store_model_and_save(model)
-    log_prediction(user, joke, prediction)
 
 
 def update_gauge_set_ratings(user):
