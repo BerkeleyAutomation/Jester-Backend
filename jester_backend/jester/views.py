@@ -74,7 +74,7 @@ def request_joke(request):
     log_request_joke(request, user, joke, stale, random, gauge)
 
     # Return the joke as a JSON object
-    response = {'joke_id': joke.id, 'joke_text': joke.joke_text, 'gauge': int(gauge)}
+    response = {'joke_id': joke.id, 'joke_text': joke.joke_text, 'num_jokes_rated': user.jokes_rated}
     return HttpResponse(json.dumps(response), content_type="application/json")
 
 
