@@ -75,7 +75,10 @@ DATABASES = {
 CORS_ORIGIN_WHITELIST = (
     'google.com',
     'berkeleyautomation.github.io',
-    # '127.0.0.1',
+    'eigentaste.berkeley.edu',
+    '127.0.0.1',
+    'localhost',
+    '*',
 )
 
 # For testing. Comment out before pushing to production
