@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'kahc4$c@cn7&!dxgc)3&+^ip6+)5#)@22$_6#v_o1f8=_93@d!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 TEMPLATE_DEBUG = True
 
@@ -80,10 +80,6 @@ CORS_ORIGIN_WHITELIST = (
     'localhost',
     '*',
 )
-
-# For testing. Comment out before pushing to production
-# SESSION_COOKIE_DOMAIN = '127.0.0.1'
-# CSRF_COOKIE_DOMAIN = '127.0.0.1'
 
 CORS_ALLOW_CREDENTIALS = True
 
