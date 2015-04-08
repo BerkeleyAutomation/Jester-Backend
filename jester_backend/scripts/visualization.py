@@ -13,6 +13,18 @@ django.setup()
 from jester.models import *
 
 
+def freedman_diaconis(v):
+    def IQR(v):
+        return np.percentile(v, 75) - np.percentile(v, 25)
+    h = 2 * IQR(v) * (len(v)) ** (-1/3)
+    return int((np.max(v) - np.min(v))/h), h
+
+
+def text_only_legend(s):
+    blank_rectangle = plt.Rectangle((0, 0), 0, 0, alpha=0.0)
+    plt.legend([blank_rectangle], [s], handlelength=0)
+
+
 def display_user_stats(users):
     num_jokes_rated = [user.jokes_rated for user in users]
     print 'Total number of users: {0}'.format(len(users))
@@ -24,11 +36,13 @@ def display_user_stats(users):
 
 
 def display_num_jokes_rated_histogram(num_jokes_rated):
+    bins, width = freedman_diaconis(num_jokes_rated)
     plt.title('Histogram of number of ratings by user')
     plt.xlabel('Number of ratings')
     plt.ylabel('Number of users')
     plt.grid(True)
-    plt.hist(num_jokes_rated)
+    text_only_legend('bins={0}, width={1:.3f}'.format(bins, width))
+    plt.hist(num_jokes_rated, bins=bins)
     plt.show()
 
 
@@ -41,11 +55,13 @@ def display_ratings_stats(ratings):
 
 
 def display_ratings_histogram(ratings):
+    bins, width = freedman_diaconis(ratings)
     plt.title('Histogram of ratings')
     plt.xlabel('Rating')
     plt.ylabel('# of ratings')
     plt.grid(True)
-    plt.hist(ratings, bins=20, range=(-10.0, 10.0))
+    text_only_legend('bins={0}, width={1:.3f}'.format(bins, width))
+    plt.hist(ratings, bins=bins)
     plt.show()
 
 
