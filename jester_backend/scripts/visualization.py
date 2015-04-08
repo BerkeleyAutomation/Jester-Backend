@@ -16,8 +16,10 @@ from jester.models import *
 def freedman_diaconis(v):
     def IQR(v):
         return np.percentile(v, 75) - np.percentile(v, 25)
-    h = 2 * IQR(v) * (len(v)) ** (-1/3)
-    return int((np.max(v) - np.min(v))/h), h
+    h = (2 * IQR(v) * (len(v)) ** (-1/3))
+    range = np.max(v) - np.min(v)
+    bins = int(range/h)
+    return bins, range/bins
 
 
 def text_only_legend(s):
