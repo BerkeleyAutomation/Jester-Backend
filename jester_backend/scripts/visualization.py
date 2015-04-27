@@ -1,5 +1,6 @@
 from __future__ import division
 import django
+import operator
 import numpy as np
 from matplotlib import pyplot as plt
 import os
@@ -41,17 +42,22 @@ def display_time_stats():
     users = Rater.objects.count()
     times = []
     for user in Rater.objects.all():
-        first = UserLog.objects.filter(user=user).earliest('timestamp').timestamp
-        last = UserLog.objects.filter(user=user).latest('timestamp').timestamp
-        difference = (last - first).total_seconds()
-        times.append(difference)
+        try:
+          first = UserLog.objects.filter(user=user).earliest('timestamp').timestamp
+          last = UserLog.objects.filter(user=user).latest('timestamp').timestamp
+          difference = (last - first).total_seconds()/60.0
+          times.append(difference)
+        except UserLog.DoesNotExist:
+	  print 'User does not exist'
+    times = filter(lambda x: operator.lt(x, 10), times)
+    print 'Users that interacted with the system for less than 10 minutes: {0}'.format(len(times))
     print 'Mean time b/w first and last interaction: {0}'.format(np.mean(times))
     print 'Max. time b/w first and last interaction: {0}'.format(np.max(times))
     print 'Min. time b/w first and last interaction: {0}'.format(np.min(times))
     bins, width = freedman_diaconis(times)
     # Display histogram of times
     plt.title('Histogram of time b/w first and last interaction')
-    plt.xlabel('Time (s)')
+    plt.xlabel('Time (min)')
     plt.ylabel('Number of users')
     plt.grid(True)
     text_only_legend('bins={0}, width={1:.3f}'.format(bins, width))
@@ -93,8 +99,8 @@ def main():
     ratings = [rating.to_float() for rating in Rating.objects.all()]
     users = [user for user in Rater.objects.all()]
 
-    #display_user_stats(users)
-    #display_ratings_stats(ratings)
+    display_user_stats(users)
+    display_ratings_stats(ratings)
 
     display_time_stats()
 
