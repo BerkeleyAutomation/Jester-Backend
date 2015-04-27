@@ -37,6 +37,28 @@ def display_user_stats(users):
     display_num_jokes_rated_histogram(num_jokes_rated)
 
 
+def display_time_stats():
+    users = Rater.objects.count()
+    times = []
+    for user in Rater.objects.all():
+        first = UserLog.objects.filter(user=user).earliest('timestamp').timestamp
+        last = UserLog.objects.filter(user=user).latest('timestamp').timestamp
+        difference = (last - first).total_seconds()
+        times.append(difference)
+    print 'Mean time b/w first and last interaction: {0}'.format(np.mean(times))
+    print 'Max. time b/w first and last interaction: {0}'.format(np.max(times))
+    print 'Min. time b/w first and last interaction: {0}'.format(np.min(times))
+    bins, width = freedman_diaconis(times)
+    # Display histogram of times
+    plt.title('Histogram of time b/w first and last interaction')
+    plt.xlabel('Time (s)')
+    plt.ylabel('Number of users')
+    plt.grid(True)
+    text_only_legend('bins={0}, width={1:.3f}'.format(bins, width))
+    plt.hist(times, bins=bins)
+    plt.show()
+
+
 def display_num_jokes_rated_histogram(num_jokes_rated):
     bins, width = freedman_diaconis(num_jokes_rated)
     plt.title('Histogram of number of ratings by user')
@@ -71,8 +93,10 @@ def main():
     ratings = [rating.to_float() for rating in Rating.objects.all()]
     users = [user for user in Rater.objects.all()]
 
-    display_user_stats(users)
-    display_ratings_stats(ratings)
+    #display_user_stats(users)
+    #display_ratings_stats(ratings)
+
+    display_time_stats()
 
 
 if __name__ == '__main__':
