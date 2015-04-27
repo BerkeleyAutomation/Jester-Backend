@@ -11,12 +11,19 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'jester_backend.settings'
 django.setup()
 
 from jester.models import *
+from django.core.mail import send_mail
 
 MAX_TOP_RATED_JOKES = 10
 MAX_TOP_VARIANCE_JOKES = 10
 
 TOP_RATED_JOKE_TMPL = 'Joke {0}. Mean Rating: {1}'
 TOP_VARIANCE_JOKE_TMPL = 'Joke {0}. Variance: {1}'
+
+SETTINGS = {
+    'to': ['virajmahesh@gmail.com'],
+    'from': 'jester@rieff.ieor.berkeley.edu',
+    'subject': 'Jester v5 Daily Report'
+}
 
 
 def populate(rating_matrix, rating):
@@ -72,8 +79,8 @@ def main():
         joke = 'top_variance_joke_{0}'.format(i + 1)
         report_parameters[joke] = TOP_VARIANCE_JOKE_TMPL.format(id, variance)
 
-    final_report = template.format(**report_parameters)
-    print final_report
+    report = template.format(**report_parameters)
+    send_mail(SETTINGS['subject'], report, SETTINGS['from'], SETTINGS['to'])
 
 
 if __name__ == '__main__':

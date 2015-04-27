@@ -71,6 +71,11 @@ DATABASES = {
     }
 }
 
+EMAIL_HOST = 'localhost'
+EMAIL_HOST_PASSWORD = ''
+EMAIL_HOST_USER = ''
+EMAIL_PORT = 25
+
 CORS_ORIGIN_WHITELIST = (
     'google.com',
     'berkeleyautomation.github.io',
