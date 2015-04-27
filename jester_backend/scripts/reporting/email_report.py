@@ -15,8 +15,9 @@ from jester.models import *
 MAX_TOP_RATED_JOKES = 10
 MAX_TOP_VARIANCE_JOKES = 10
 
-TOP_RATED_JOKE_TMPL = 'Joke {0}. Mean Rating: {1}\n'
-TOP_VARIANCE_JOKE_TMPL = 'Joke {0}. Variance: {1}\n'
+TOP_RATED_JOKE_TMPL = 'Joke {0}. Mean Rating: {1}'
+TOP_VARIANCE_JOKE_TMPL = 'Joke {0}. Variance: {1}'
+
 
 def populate(rating_matrix, rating):
     rating_matrix[rating.user_id - 1][rating.joke_id - 1] = rating.to_float()
@@ -37,7 +38,7 @@ def main():
     for rating in Rating.objects.all():
         populate(rating_matrix, rating)
 
-    rating_count = np.sum(~np.isnan(rating_matrix), axis=1)
+    rating_count = np.array([user.jokes_rated for user in Rater.objects.all()])
 
     report_parameters = {
         'date': str(timezone.now().date()),
@@ -61,16 +62,15 @@ def main():
     variances = [(id + 1, variance) for id, variance in enumerate(variances)]
     variances.sort(key=operator.itemgetter(1), reverse=True)
 
-    for i in range(MAX_TOP_RATED_JOKES):
+    for i in xrange(MAX_TOP_RATED_JOKES):
         id, mean = mean_ratings[i]
-        report_parameters['top_rated_joke_{0}'.format(i + 1)] = \
-            TOP_RATED_JOKE_TMPL.format(id, mean)
+        joke = 'top_rated_joke_{0}'.format(i + 1)
+        report_parameters[joke] = TOP_RATED_JOKE_TMPL.format(id, mean)
 
-    for i in range(MAX_TOP_VARIANCE_JOKES):
+    for i in xrange(MAX_TOP_VARIANCE_JOKES):
         id, variance = variances[i]
-        report_parameters['top_variance_joke_{0}'.format(i + 1)] = \
-            TOP_VARIANCE_JOKE_TMPL.format(id, mean)
-
+        joke = 'top_variance_joke_{0}'.format(i + 1)
+        report_parameters[joke] = TOP_VARIANCE_JOKE_TMPL.format(id, variance)
 
     final_report = template.format(**report_parameters)
     print final_report
