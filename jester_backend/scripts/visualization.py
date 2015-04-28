@@ -17,10 +17,11 @@ from jester.models import *
 def freedman_diaconis(v):
     def IQR(v):
         return np.percentile(v, 75) - np.percentile(v, 25)
-    h = (2 * IQR(v) * (len(v)) ** (-1/3))
+
+    h = (2 * IQR(v) * (len(v)) ** (-1 / 3))
     range = np.max(v) - np.min(v)
-    bins = int(range/h)
-    return bins, range/bins
+    bins = int(range / h)
+    return bins, range / bins
 
 
 def text_only_legend(s):
@@ -43,12 +44,13 @@ def display_time_stats():
     times = []
     for user in Rater.objects.all():
         try:
-          first = UserLog.objects.filter(user=user).earliest('timestamp').timestamp
-          last = UserLog.objects.filter(user=user).latest('timestamp').timestamp
-          difference = (last - first).total_seconds()/60.0
-          times.append(difference)
+            user_queryset = UserLog.objects.filter(user=user)
+            first = user_queryset.earliest('timestamp').timestamp
+            last = user_queryset.latest('timestamp').timestamp
+            difference = (last - first).total_seconds() / 60.0
+            times.append(difference)
         except UserLog.DoesNotExist:
-	  print 'User does not exist'
+            print 'User does not exist'
     times = filter(lambda x: operator.lt(x, 10), times)
     print 'Users that interacted with the system for less than 10 minutes: {0}'.format(len(times))
     print 'Mean time b/w first and last interaction: {0}'.format(np.mean(times))

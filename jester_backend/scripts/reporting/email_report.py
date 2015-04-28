@@ -16,8 +16,8 @@ from django.core.mail import send_mail
 MAX_TOP_RATED_JOKES = 10
 MAX_TOP_VARIANCE_JOKES = 10
 
-TOP_RATED_JOKE_TMPL = 'Joke {0}. Mean Rating: {1}'
-TOP_VARIANCE_JOKE_TMPL = 'Joke {0}. Variance: {1}'
+TOP_RATED_JOKE_TMPL = 'Joke {0}. Mean Rating: {1:.3f}'
+TOP_VARIANCE_JOKE_TMPL = 'Joke {0}. Variance: {1:.3f}'
 
 SETTINGS = {
     'to': ['virajmahesh@gmail.com'],
@@ -48,7 +48,7 @@ def main():
     rating_count = np.array([user.jokes_rated for user in Rater.objects.all()])
 
     report_parameters = {
-        'date': str(timezone.now().date()),
+        'date': timezone.now().date().strftime('%m/%d/%y'),
         'users': users,
         'ratings': ratings,
         'mean_rating': np.nanmean(rating_matrix),
