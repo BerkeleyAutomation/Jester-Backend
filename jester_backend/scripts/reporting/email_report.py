@@ -20,7 +20,8 @@ TOP_RATED_JOKE_TMPL = 'Joke {0}. Mean Rating: {1:.3f}'
 TOP_VARIANCE_JOKE_TMPL = 'Joke {0}. Variance: {1:.3f}'
 
 SETTINGS = {
-    'to': ['virajmahesh@gmail.com'],
+    'to': ['virajmahesh@berkeley.edu', 'goldberg@berkeley.edu',
+           'sanjaykrishn@gmail.com', 'patel.jay@berkeley.edu'],
     'from': 'jester@rieff.ieor.berkeley.edu',
     'subject': 'Jester v5 Daily Report'
 }
