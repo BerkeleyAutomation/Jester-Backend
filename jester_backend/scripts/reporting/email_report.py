@@ -1,4 +1,5 @@
 from __future__ import division
+from datetime import timedelta
 import django
 import numpy as np
 import operator
@@ -27,6 +28,13 @@ SETTINGS = {
 }
 
 
+def merge_dictionaries(*args):
+    result = {}
+    for dictionary in args:
+        result.update(dictionary)
+    return result
+
+
 def populate(rating_matrix, rating):
     rating_matrix[rating.user_id - 1][rating.joke_id - 1] = rating.to_float()
 
@@ -36,22 +44,45 @@ def main():
     template = report.read()
     report.close()
 
+    time = timezone.now().time()
+    today = timezone.now().date()
+    yesterday = today + timedelta(days=-1)
+
+    daily_ratings = Rating.objects.filter(timestamp__range=[yesterday, today])
+
     users = Rater.objects.count()
-    ratings = Rating.objects.count()
     jokes = Joke.objects.count()
+    all_ratings = Rating.objects.count()
 
     rating_matrix = np.zeros((users, jokes))
     rating_matrix.fill(np.nan)
 
+    daily_rating_matrix = np.zeros((users, jokes))
+    daily_rating_matrix.fill(np.nan)
+
     for rating in Rating.objects.all():
         populate(rating_matrix, rating)
 
+    for rating in daily_ratings:
+        populate(daily_rating_matrix, rating)
+
     rating_count = np.array([user.jokes_rated for user in Rater.objects.all()])
 
-    report_parameters = {
-        'date': timezone.now().date().strftime('%m/%d/%y'),
-        'users': users,
-        'ratings': ratings,
+    header = {
+        'time': time.strftime('%H:%M:%S'),
+        'today': today.strftime('%m/%d/%y'),
+        'yesterday': today.strftime('%m/%d/%y')
+    }
+
+    daily_stats = {
+        'daily_ratings_count': daily_ratings.count(),
+        'mean_daily_rating': np.nanmean(daily_rating_matrix),
+        'median_daily_rating': np.nanmedian(daily_rating_matrix),
+    }
+
+    aggregate_stats = {
+        'total_users': users,
+        'total_ratings': all_ratings,
         'mean_rating': np.nanmean(rating_matrix),
         'median_rating': np.nanmedian(rating_matrix),
         'min_rating': np.nanmin(rating_matrix),
@@ -73,14 +104,16 @@ def main():
     for i in xrange(MAX_TOP_RATED_JOKES):
         id, mean = mean_ratings[i]
         joke = 'top_rated_joke_{0}'.format(i + 1)
-        report_parameters[joke] = TOP_RATED_JOKE_TMPL.format(id, mean)
+        aggregate_stats[joke] = TOP_RATED_JOKE_TMPL.format(id, mean)
 
     for i in xrange(MAX_TOP_VARIANCE_JOKES):
         id, variance = variances[i]
         joke = 'top_variance_joke_{0}'.format(i + 1)
-        report_parameters[joke] = TOP_VARIANCE_JOKE_TMPL.format(id, variance)
+        aggregate_stats[joke] = TOP_VARIANCE_JOKE_TMPL.format(id, variance)
 
+    report_parameters = merge_dictionaries(header, daily_stats, aggregate_stats)
     report = template.format(**report_parameters)
+
     send_mail(SETTINGS['subject'], report, SETTINGS['from'], SETTINGS['to'])
 
 
