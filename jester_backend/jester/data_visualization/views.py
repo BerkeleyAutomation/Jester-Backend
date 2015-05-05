@@ -1,6 +1,7 @@
 from __future__ import division
 from django.http import HttpResponse
 from jester.models import *
+from distutils.util import strtobool
 from datetime import datetime
 import numpy as np
 
@@ -21,10 +22,10 @@ def freedman_diaconis(v):
 def rating_histogram(request):
     start_date = datetime.strptime(request.GET.get('start_date'), '%m/%d/%Y')
     end_date = datetime.strptime(request.GET.get('end_date'), '%m/%d/%Y')
-    filter_null = request.GET.get('filter_null')
+    filter_null = strtobool(request.GET.get('filter_null'))
     ratings = map(Rating.to_float,
-                  Rating.objects.filter(timestamp__range=(start_date, end_date)))
-    if filter_null == 'true':
+                  Rating.objects.filter(timestamp__gte=start_date, timestamp__lte=end_date))
+    if filter_null is True:
         ratings = filter(lambda x: x != 0, ratings)
     bins, width = 20, 1  # Hardcoded number of bins. Works better
     hist, bin_edges = np.histogram(ratings, bins=bins)
