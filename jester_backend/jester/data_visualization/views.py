@@ -25,7 +25,7 @@ def rating_histogram(request):
     filter_null = strtobool(request.GET.get('filter_null'))
     ratings = map(Rating.to_float,
                   Rating.objects.filter(timestamp__gte=start_date, timestamp__lte=end_date))
-    if filter_null is True:
+    if filter_null:
         ratings = filter(lambda x: x != 0, ratings)
     bins, width = 20, 1  # Hardcoded number of bins. Works better
     hist, bin_edges = np.histogram(ratings, bins=bins)
