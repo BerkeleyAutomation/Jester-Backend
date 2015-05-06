@@ -45,7 +45,8 @@ def rating_histogram(request):
             'bins': bins,
             'bin_width': width,
             'num_ratings': len(ratings),
-            'mean': np.mean(ratings)
+            'mean_rating': np.mean(ratings),
+            'median_rating': np.median(ratings)
         }
     }
     return HttpResponse(HttpResponse(json.dumps(response),
