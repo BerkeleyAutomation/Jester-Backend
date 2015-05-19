@@ -93,6 +93,9 @@ class Rater(models.Model):
         self.stale = False
         self.save()
 
+    def num_jokes_rated(self):
+        return self.jokes_rated
+
     def __unicode__(self):
         """
         :return: A string representation of the user.
@@ -123,6 +126,9 @@ class Rating(models.Model):
 
     def to_float(self):
         return float(self.rating)
+
+    def date(self):
+        return self.timestamp.date()
 
     @staticmethod
     def create(user, joke, rating):
@@ -199,7 +205,6 @@ class UserLog(models.Model):
                               params=json.dumps(params))
         user_action.save()
 
-
     @staticmethod
     def log_logout(request, user):
         action = 'User {0} logged out'.format(user.id)
@@ -210,7 +215,6 @@ class UserLog(models.Model):
                               user=user,
                               params='')
         user_action.save()
-
 
     @staticmethod
     def log_slider(request, user, old_rating, new_rating):
@@ -224,7 +228,6 @@ class UserLog(models.Model):
                               user=user,
                               params=json.dumps(params))
         user_action.save()
-
 
     @staticmethod
     def log_request_joke(request, user, joke, stale, random, gauge):
